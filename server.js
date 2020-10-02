@@ -5,12 +5,14 @@ const fs = require("fs");
 // created express instance
 const app = express();
 const dbArray = require("./db/db.json");
-const { notStrictEqual } = require("assert");
+
 // establishing PORT
 var PORT = process.env.PORT || 8080;
+
 // middleware to handle express data parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static("public"));
 
 // API get Route
 app.get("/api/notes", function (req, res) {
@@ -23,11 +25,7 @@ app.get("/api/notes", function (req, res) {
         message: "Failed retrieving notes.",
       });
     }
-    res.json({
-      error: false,
-      data: JSON.parse(data),
-      message: "Retrieved notes.",
-    });
+    res.json(JSON.parse(data));
   });
 });
 
@@ -43,7 +41,7 @@ app.post("/api/notes", (req, res) => {
       });
     }
     const currentNotes = JSON.parse(data);
-    req.body.id = currentNotes.length;
+    req.body.id = currentNotes.length + 1;
     currentNotes.push(req.body);
     // console.log(currentNotes);
     fs.writeFile("./db/db.json", JSON.stringify(currentNotes), (err) => {
@@ -55,11 +53,7 @@ app.post("/api/notes", (req, res) => {
           message: "Failed to save new note.",
         });
       }
-      res.json({
-        error: false,
-        data: currentNotes,
-        message: "You saved a new note!",
-      });
+      res.json(currentNotes);
     });
   });
 });
@@ -77,8 +71,8 @@ app.delete("/api/notes/:id", (req, res) => {
     }
     notesToDelete = JSON.parse(data);
     filteredNotesToDelete = notesToDelete.filter((deleted) => {
-        console.log(deleted.id);
-        return deleted.id != req.params.id;
+      console.log(deleted.id);
+      return deleted.id != req.params.id;
     });
     notesAfterDeleteButStringy = JSON.stringify(filteredNotesToDelete);
     fs.writeFile("./db/db.json", notesAfterDeleteButStringy, "utf-8", (err) => {
