@@ -16,7 +16,7 @@ app.get("/api/notes", function (req, res) {
   fs.readFile("./db/db.json", "utf-8", (err, data) => {
     if (err) {
       console.log(err);
-      return res.status(500).json({
+      return res.json({
         error: true,
         data: null,
         message: "Failed retrieving notes.",
@@ -33,12 +33,31 @@ app.get("/api/notes", function (req, res) {
 // API post route
 app.post("/api/notes", (req, res) => {
   fs.readFile("./db/db.json", "utf-8", (err, data) => {
-    if (err) throw err;
+    if (err) {
+      console.log(err);
+      return res.json({
+        error: true,
+        data: null,
+        message: "Failed retrieving notes.",
+      });
+    }
     const currentNotes = JSON.parse(data);
     currentNotes.push(req.body);
     console.log(currentNotes);
     fs.writeFile("./db/db.json", JSON.stringify(currentNotes), (err) => {
-        if (err) throw err;
+      if (err) {
+        console.log(err);
+        return res.json({
+          error: true,
+          data: null,
+          message: "Failed to save new note.",
+        });
+      }
+      res.json({
+        error: false,
+        data: currentNotes,
+        message: "You saved a new note!",
+      });
     });
   });
 });
