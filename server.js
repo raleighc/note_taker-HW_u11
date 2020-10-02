@@ -5,6 +5,7 @@ const fs = require("fs");
 // created express instance
 const app = express();
 const dbArray = require("./db/db.json");
+const { notStrictEqual } = require("assert");
 // establishing PORT
 var PORT = process.env.PORT || 8080;
 // middleware to handle express data parsing
@@ -42,8 +43,9 @@ app.post("/api/notes", (req, res) => {
       });
     }
     const currentNotes = JSON.parse(data);
+    req.body.id = currentNotes.length;
     currentNotes.push(req.body);
-    console.log(currentNotes);
+    // console.log(currentNotes);
     fs.writeFile("./db/db.json", JSON.stringify(currentNotes), (err) => {
       if (err) {
         console.log(err);
@@ -63,36 +65,36 @@ app.post("/api/notes", (req, res) => {
 });
 
 // API delete route
-// app.delete("/api/notes", (req, res) => {
-//     fs.readFile("./db/db.json", "utf-8", (err, data) => {
-//       if (err) {
-//         console.log(err);
-//         return res.json({
-//           error: true,
-//           data: null,
-//           message: "Failed retrieving notes.",
-//         });
-//       }
-//       const currentNotes = JSON.parse(data);
-//       currentNotes.push(req.body);
-//       console.log(currentNotes);
-//       fs.writeFile("./db/db.json", JSON.stringify(currentNotes), (err) => {
-//         if (err) {
-//           console.log(err);
-//           return res.json({
-//             error: true,
-//             data: null,
-//             message: "Failed to save new note.",
-//           });
-//         }
-//         res.json({
-//           error: false,
-//           data: currentNotes,
-//           message: "You saved a new note!",
-//         });
-//       });
-//     });
-//   });
+app.delete("/api/notes/:id", (req, res) => {
+  fs.readFile("./db/db.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json({
+        error: true,
+        data: null,
+        message: "Failed retrieving notes.",
+      });
+    }
+    notesToDelete = JSON.parse(data);
+    filteredNotesToDelete = notesToDelete.filter((deleted) => {
+        console.log(deleted.id);
+        return deleted.id != req.params.id;
+    });
+    notesAfterDeleteButStringy = JSON.stringify(filteredNotesToDelete);
+    fs.writeFile("./db/db.json", notesAfterDeleteButStringy, "utf-8", (err) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          error: true,
+          data: null,
+          message: "Failed to delete note.",
+        });
+      }
+      notesAfterDeleteButParsed = JSON.parse(notesAfterDeleteButStringy);
+      res.json(notesAfterDeleteButParsed);
+    });
+  });
+});
 
 // HTML get Routes
 app.get("/", function (req, res) {
