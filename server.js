@@ -3,9 +3,10 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require('uuid');
+const dbArray = require("./db/db.json");
+
 // created express instance
 const app = express();
-const dbArray = require("./db/db.json");
 
 // establishing PORT
 var PORT = process.env.PORT || 8080;
@@ -44,7 +45,6 @@ app.post("/api/notes", (req, res) => {
     const currentNotes = JSON.parse(data);
     req.body.id = uuidv4();
     currentNotes.push(req.body);
-    // console.log(currentNotes);
     fs.writeFile("./db/db.json", JSON.stringify(currentNotes), (err) => {
       if (err) {
         console.log(err);
